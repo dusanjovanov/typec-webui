@@ -4,7 +4,7 @@ import { webUi } from "./webUi";
 
 /**
  * A helper class that accepts the variable name to hold the webui window
- * and "binds" all window-specific webui functions.
+ * and binds all window-specific webui functions to it.
  */
 export class WebUiWindow {
   constructor(varName: string) {
@@ -60,6 +60,8 @@ export class WebUiWindow {
       elementId === "" ? "all" : elementId
     }`;
 
+    const refEvType = tc.dotRef("e", "event_type");
+
     return {
       handler: tc.func(
         "void",
@@ -68,33 +70,32 @@ export class WebUiWindow {
         [
           tc
             ._if(
-              `e->event_type == ${
+              tc.eq(
+                refEvType,
                 WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_CONNECTED]
-              }`,
-              [tc.std.printf(tc.str("Connected."))]
+              ),
+              [tc.std.printf(tc.str("WEBUI_EVENT_CONNECTED."))]
             )
             ._elseif(
-              `e->event_type ==  ${
+              tc.eq(
+                refEvType,
                 WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_DISCONNECTED]
-              }`,
-              [tc.std.printf(tc.str("Disconnected."))]
+              ),
+              [tc.std.printf(tc.str("WEBUI_EVENT_DISCONNECTED."))]
             )
             ._elseif(
-              `e->event_type ==  ${
+              tc.eq(
+                refEvType,
                 WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_MOUSE_CLICK]
-              }`,
-              [tc.std.printf(tc.str("Click."))]
+              ),
+              [tc.std.printf(tc.str("WEBUI_EVENT_MOUSE_CLICK."))]
             )
             ._elseif(
-              `e->event_type ==  ${
+              tc.eq(
+                refEvType,
                 WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_NAVIGATION]
-              }`,
-              [
-                tc.std.printf(
-                  tc.str("Starting navigation to: %s"),
-                  `e->element`
-                ),
-              ]
+              ),
+              [tc.std.printf(tc.str("WEBUI_EVENT_NAVIGATION."))]
             )
             .toString(),
         ]

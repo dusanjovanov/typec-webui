@@ -22,6 +22,8 @@ import { $ } from "bun";
 const win = new WebUiWindow("myWindow");
 
 const code = tc.chunk([
+  // includes the webui header file
+  webUi.include(),
   // the C main function
   tc.func(
     "int",
@@ -52,11 +54,11 @@ const compileCmd = tc.gcc({
   path: C_FILE_PATH,
   output: BINARY_FILE_PATH,
   includeSearchPaths: ["webui/include"],
-  libSearchPaths: ["webui"],
+  libSearchPaths: ["webui"] // path to the webui folder you downloaded,
   libs: ["webui-2-static", "ws2_32", "user32", "ole32"],
   allWarnings: true,
   linkerOptions: ["-subsystem=windows"],
-  optimizationLevel: "0",
+  optimizationLevel: "s",
   isStatic: true,
 });
 
@@ -69,15 +71,37 @@ $`${{ raw: BINARY_FILE_PATH }}`;
 
 ## API
 
-`WebUIWindow` class:
+`webUi` object has an equivalent method for all `webui` C functions.
 
 ```ts
-const win = new WebUIWindow("someName");
+type WebUi = {
+  include: () => string,
+  wait: () => string,
+  newWindow: () => string,
+  show: (window: string, html: string) => string,
+  showBrowser: (window: string, html: string, browser: WebUiBrowser) => string,
+  getBestBrowser: (window: string) => string,
+  bind: (window: string, elementId: string, callback: string) => string,
+  script: (
+    window: string,
+    js: string,
+    timeout: TextLike,
+    buffer: string,
+    bufferSize: TextLike
+  ) => string,
+  setIcon: (window: string, svg: string, svgType?: string) => string,
+  navigate: (window: string, url: string): string;
+  ...
+};
+```
 
-// you need to call this before any other methods
-win.create();
+`WebUiWindow` class is a helper class that binds all window specific functions to a single window variable.
 
-// this actually creates the window and assigns it to a variable named "someName"
+```ts
+const win = new WebUiWindow("someName");
+
+// you need to call this and insert it in the code before any other methods
+win.create(); // this actually creates the window and assigns it to a variable named "someName"
 
 // show window and load an html file:
 win.show(tc.str("./index.html"));
