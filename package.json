@@ -11,7 +11,8 @@
     "types": "./dist/index.d.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "~1.1",
+    "bun": "~1.1",
     "bun-plugin-dts": "^0.3.0",
     "prettier": "2.8"
   },
