@@ -1,17 +1,24 @@
-import {
-  Address,
-  ArrayC,
-  chunk,
-  Condition,
-  Func,
-  Operator,
-  Simple,
-  std,
-  Value,
-  Variable,
-} from "typec";
+import { Array, Func, Param, Type, Var, type CodeLike } from "typec";
 import { WebUiBrowser } from "./types";
 import { WebUi } from "./WebUi";
+
+const script = (() => {
+  const script = Func.new(Type.string(), "tc_webui_script", [
+    Param.new(Type.size_t(), "win"),
+    Param.new(Type.string(), "js"),
+  ]);
+
+  const response = Array.new(Type.char(), 64, "response");
+
+  const { win, js } = script.params;
+
+  script.add(
+    WebUi.script.call(win, js, 0, response, 64),
+    Func.return(response)
+  );
+
+  return script;
+})();
 
 /**
  * A helper class that accepts the variable name to hold the webui window
@@ -19,128 +26,44 @@ import { WebUi } from "./WebUi";
  */
 export class WebUiWindow {
   constructor(varName: string) {
-    this.variable = new Variable(Simple.type("size_t"), varName);
+    this.win = Var.new(Type.size_t(), varName);
   }
-  variable;
+  win;
 
   create() {
-    return this.variable.init(WebUi.newWindow.call([]));
+    return this.win.init(WebUi.newWindow.call());
   }
 
   getBestBrowser() {
-    return WebUi.getBestBrowser.call([this.variable.value()]);
+    return WebUi.getBestBrowser.call(this.win);
   }
 
-  show(html: string) {
-    return WebUi.show.call([this.variable.value(), Address.string(html)]);
+  show(html: CodeLike) {
+    return WebUi.show.call(this.win, html);
   }
 
-  showBrowser(html: string, browser: WebUiBrowser) {
-    return WebUi.showBrowser.call([
-      this.variable.value(),
-      Address.string(html),
-      new Value("size_t", browser),
-    ]);
+  showBrowser(html: CodeLike, browser: WebUiBrowser) {
+    return WebUi.showBrowser.call(this.win, html, browser);
   }
 
-  bind(elementId: string, callback: string) {
-    return WebUi.bind.call([
-      this.variable.value(),
-      Address.string(elementId),
-      "" as any,
-    ]);
+  bind(elementId: CodeLike, callback: CodeLike) {
+    return WebUi.bind.call(this.win, elementId, callback);
   }
 
-  script(js: string) {
-    const arr = new ArrayC(Simple.type("char"), 64, "response");
-
-    return chunk([
-      arr.declare(),
-      Condition.if(
-        Operator.not(
-          WebUi.script.call([
-            this.variable.value(),
-            Address.string(js),
-            Value.any("size_t", 0),
-            Address.string("response"),
-            Value.any("size_t", 64),
-          ])
-        ),
-        [
-          std.io.printf.call([
-            Address.string("JavaScript Error: %s\\n"),
-            `response`,
-          ]),
-        ]
-      ).else([
-        std.io.printf.call([Address.string("JavaScript Response: %s\\n")]),
-        `response`,
-      ]),
-    ]);
+  script(js: CodeLike) {
+    return script.call(this.win, js);
   }
 
-  setIcon(svg: string, svgType = "image/svg+xml") {
-    return WebUi.setIcon.call([
-      this.variable.value(),
-      Address.string(svg),
-      Address.string(svgType),
-    ]);
+  setIcon(svg: CodeLike, svgType = "image/svg+xml") {
+    return WebUi.setIcon.call(this.win, svg, svgType);
   }
 
   /** Navigate to a specific URL. */
-  navigate(url: string) {
-    return WebUi.navigate.call([this.variable.value(), Address.string(url)]);
+  navigate(url: CodeLike) {
+    return WebUi.navigate.call(this.win, url);
   }
 
-  subscribe(elementId = "") {
-    // const fnName = `webui_ev_${this.varName}_${
-    //   elementId === "" ? "all" : elementId
-    // }`;
-
-    // const refEvType = dotRef("e", "event_type");
-
-    const handler = Func.new(Simple.type("void"), "bla", []);
-
-    return {
-      handler,
-      bind: () => this.bind(elementId, ""),
-    };
+  subscribe(elementId: CodeLike = "") {
+    //
   }
 }
-
-// func(
-//   "void",
-//   fnName,
-//   [["webui_event_t*", "e"]],
-//   [
-//     Condition.if(
-//       Operator.eq(
-//         refEvType,
-//         WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_CONNECTED]
-//       ),
-//       [std.printf(str("WEBUI_EVENT_CONNECTED."))]
-//     )
-//       ._elseif(
-//         eq(
-//           refEvType,
-//           WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_DISCONNECTED]
-//         ),
-//         [std.printf(str("WEBUI_EVENT_DISCONNECTED."))]
-//       )
-//       ._elseif(
-//         eq(
-//           refEvType,
-//           WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_MOUSE_CLICK]
-//         ),
-//         [std.printf(str("WEBUI_EVENT_MOUSE_CLICK."))]
-//       )
-//       ._elseif(
-//         eq(
-//           refEvType,
-//           WebUiEventNameMap[WebUiEventType.WEBUI_EVENT_NAVIGATION]
-//         ),
-//         [std.printf(str("WEBUI_EVENT_NAVIGATION."))]
-//       )
-//       .toString(),
-//   ]
-// )
