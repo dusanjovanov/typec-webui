@@ -1,4 +1,4 @@
-import { Array, Func, Param, Type, Var, type CodeLike } from "typec";
+import { Array, Func, Lit, Param, Type, Var, type CodeLike } from "typec";
 import { WebUiBrowser } from "./types";
 import { WebUi } from "./WebUi";
 
@@ -54,7 +54,7 @@ export class WebUiWindow {
     return script.call(this.win, js);
   }
 
-  setIcon(svg: CodeLike, svgType = "image/svg+xml") {
+  setIcon(svg: CodeLike, svgType: CodeLike = Lit.string("image/svg+xml")) {
     return WebUi.setIcon.call(this.win, svg, svgType);
   }
 
