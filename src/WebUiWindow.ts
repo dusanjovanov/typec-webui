@@ -1,5 +1,5 @@
 import { Lit, Type, Var, type CodeLike } from "typec";
-import { webui } from "./webuiA";
+import { webui } from "./webui";
 
 /**
  * A helper class that accepts the variable name to hold the webui window
