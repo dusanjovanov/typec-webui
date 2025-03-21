@@ -1,3 +1,3 @@
 export * from "./types";
-export * from "./WebUi";
-export * from "./WebUiWindow";
+export * from "./webuiA";
+export * from "./WebUIWindow";

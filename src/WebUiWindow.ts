@@ -1,66 +1,47 @@
-import { Array, Func, Lit, Param, Type, Var, type CodeLike } from "typec";
-import { WebUiBrowser } from "./types";
-import { WebUi } from "./WebUi";
-
-const script = (() => {
-  const script = Func.new(Type.string(), "tc_webui_script", [
-    Param.new(Type.size_t(), "win"),
-    Param.new(Type.string(), "js"),
-  ]);
-
-  const response = Array.new(Type.char(), 64, "response");
-
-  const { win, js } = script.params;
-
-  script.add(
-    WebUi.script.call(win, js, 0, response, 64),
-    Func.return(response)
-  );
-
-  return script;
-})();
+import { Lit, Type, Var, type CodeLike } from "typec";
+import { webui } from "./webuiA";
 
 /**
  * A helper class that accepts the variable name to hold the webui window
  * and binds all window-specific webui functions to it.
  */
-export class WebUiWindow {
+export class WebUIWindow {
   constructor(varName: string) {
     this.win = Var.new(Type.size_t(), varName);
   }
   win;
 
   create() {
-    return this.win.init(WebUi.newWindow.call());
+    return this.win.init(webui.new_window.call());
   }
 
   getBestBrowser() {
-    return WebUi.getBestBrowser.call(this.win);
+    return webui.get_best_browser.call(this.win);
   }
 
   show(html: CodeLike) {
-    return WebUi.show.call(this.win, html);
+    return webui.show.call(this.win, html);
   }
 
-  showBrowser(html: CodeLike, browser: WebUiBrowser) {
-    return WebUi.showBrowser.call(this.win, html, browser);
+  showBrowser(html: CodeLike, browser: CodeLike) {
+    return webui.show_browser.call(this.win, html, browser);
   }
 
   bind(elementId: CodeLike, callback: CodeLike) {
-    return WebUi.bind.call(this.win, elementId, callback);
+    return webui.bind.call(this.win, elementId, callback);
   }
 
   script(js: CodeLike) {
-    return script.call(this.win, js);
+    return webui.tcScript.call(this.win, js);
   }
 
   setIcon(svg: CodeLike, svgType: CodeLike = Lit.string("image/svg+xml")) {
-    return WebUi.setIcon.call(this.win, svg, svgType);
+    return webui.set_icon.call(this.win, svg, svgType);
   }
 
   /** Navigate to a specific URL. */
   navigate(url: CodeLike) {
-    return WebUi.navigate.call(this.win, url);
+    return webui.navigate.call(this.win, url);
   }
 
   subscribe(elementId: CodeLike = "") {
